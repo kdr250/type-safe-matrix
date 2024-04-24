@@ -1,6 +1,8 @@
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Mul;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 #[derive(Debug, PartialEq)]
 pub struct Matrix2D<const M: usize, const N: usize> {
@@ -32,6 +34,30 @@ impl<const M: usize, const N: usize> AddAssign for Matrix2D<M, N> {
         for m in 0..M {
             for n in 0..N {
                 self.elements[m][n] += rhs.elements[m][n];
+            }
+        }
+    }
+}
+
+impl<const M: usize, const N: usize> Sub for Matrix2D<M, N> {
+    type Output = Matrix2D<M, N>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let mut elements = [[0.0; N]; M];
+        for m in 0..M {
+            for n in 0..N {
+                elements[m][n] = self.elements[m][n] - rhs.elements[m][n];
+            }
+        }
+        return Matrix2D { elements };
+    }
+}
+
+impl<const M: usize, const N: usize> SubAssign for Matrix2D<M, N> {
+    fn sub_assign(&mut self, rhs: Self) {
+        for m in 0..M {
+            for n in 0..N {
+                self.elements[m][n] -= rhs.elements[m][n];
             }
         }
     }
@@ -97,6 +123,36 @@ mod tests {
         // compilation error
         // let c: Matrix2D<2, 3> = Matrix2D::new([[0.0; 3], [0.0; 3]]);
         // a += c;
+
+        assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn sub_test() {
+        let expected: Matrix2D<2, 2> = Matrix2D::new([[4.0, -1.0], [-5.0, 1.0]]);
+
+        let a: Matrix2D<2, 2> = Matrix2D::new([[2.0, 0.0], [-1.0, 4.0]]);
+        let b: Matrix2D<2, 2> = Matrix2D::new([[-2.0, 1.0], [4.0, 3.0]]);
+        let actual: Matrix2D<2, 2> = a - b;
+
+        // compilation error
+        // let c: Matrix2D<1, 2> = Matrix2D::new([[1.0, 2.0]]);
+        // a - c;
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn sub_assign_test() {
+        let expected: Matrix2D<2, 2> = Matrix2D::new([[4.0, -1.0], [-5.0, 1.0]]);
+
+        let mut a: Matrix2D<2, 2> = Matrix2D::new([[2.0, 0.0], [-1.0, 4.0]]);
+        let b: Matrix2D<2, 2> = Matrix2D::new([[-2.0, 1.0], [4.0, 3.0]]);
+        a -= b;
+
+        // compilation error
+        // let c: Matrix2D<1, 2> = Matrix2D::new([[1.0, 2.0]]);
+        // a -= c;
 
         assert_eq!(a, expected);
     }
