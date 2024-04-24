@@ -2,8 +2,8 @@ use std::ops::Add;
 use std::ops::AddAssign;
 
 #[derive(Debug, PartialEq)]
-pub struct Matrix2D<const N: usize, const M: usize> {
-    pub elements: [[f32; M]; N],
+pub struct Matrix2D<const M: usize, const N: usize> {
+    pub elements: [[f32; N]; M],
 }
 
 impl<const N: usize, const M: usize> Matrix2D<N, M> {
@@ -12,13 +12,13 @@ impl<const N: usize, const M: usize> Matrix2D<N, M> {
     }
 }
 
-impl<const N: usize, const M: usize> Add for Matrix2D<N, M> {
-    type Output = Matrix2D<N, M>;
+impl<const M: usize, const N: usize> Add for Matrix2D<M, N> {
+    type Output = Matrix2D<M, N>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut elements = [[0.0; M]; N];
-        for n in 0..N {
-            for m in 0..M {
+        let mut elements = [[0.0; N]; M];
+        for n in 0..M {
+            for m in 0..N {
                 elements[n][m] = self.elements[n][m] + rhs.elements[n][m];
             }
         }
@@ -26,10 +26,10 @@ impl<const N: usize, const M: usize> Add for Matrix2D<N, M> {
     }
 }
 
-impl<const N: usize, const M: usize> AddAssign for Matrix2D<N, M> {
+impl<const M: usize, const N: usize> AddAssign for Matrix2D<M, N> {
     fn add_assign(&mut self, rhs: Self) {
-        for n in 0..N {
-            for m in 0..M {
+        for n in 0..M {
+            for m in 0..N {
                 self.elements[n][m] += rhs.elements[n][m];
             }
         }
@@ -56,7 +56,7 @@ mod tests {
     }
 
     #[test]
-    fn add_asign_test() {
+    fn add_add_assign() {
         let expected: Matrix2D<2, 2> = Matrix2D::new([[3.0, 10.0], [10.0, -8.0]]);
 
         let mut a: Matrix2D<2, 2> = Matrix2D::new([[3.0, 7.0], [6.0, -4.0]]);
