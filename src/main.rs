@@ -1,6 +1,6 @@
-use type_safe_matrix::Matrix2D;
+use type_safe_matrix::Matrix;
 
 fn main() {
-    let a: Matrix2D<2, 2> = Matrix2D::new([[3.0, 7.0], [6.0, -4.0]]);
+    let a: Matrix<2, 2> = Matrix::new([[3.0, 7.0], [6.0, -4.0]]);
     println!("{:?}", a);
 }
