@@ -106,7 +106,7 @@ mod tests {
         let actual: Matrix<2, 2> = a + b;
 
         // compilation error
-        // let c: Matrix2D<2, 3> = Matrix2D::new([[0.0; 3], [0.0; 3]]);
+        // let c: Matrix<2, 3> = Matrix::new([[0.0; 3], [0.0; 3]]);
         // a + c;
 
         assert_eq!(actual, expected);
@@ -121,7 +121,7 @@ mod tests {
         a += b;
 
         // compilation error
-        // let c: Matrix2D<2, 3> = Matrix2D::new([[0.0; 3], [0.0; 3]]);
+        // let c: Matrix<2, 3> = Matrix::new([[0.0; 3], [0.0; 3]]);
         // a += c;
 
         assert_eq!(a, expected);
@@ -136,7 +136,7 @@ mod tests {
         let actual: Matrix<2, 2> = a - b;
 
         // compilation error
-        // let c: Matrix2D<1, 2> = Matrix2D::new([[1.0, 2.0]]);
+        // let c: Matrix<1, 2> = Matrix::new([[1.0, 2.0]]);
         // a - c;
 
         assert_eq!(actual, expected);
@@ -151,7 +151,7 @@ mod tests {
         a -= b;
 
         // compilation error
-        // let c: Matrix2D<1, 2> = Matrix2D::new([[1.0, 2.0]]);
+        // let c: Matrix<1, 2> = Matrix::new([[1.0, 2.0]]);
         // a -= c;
 
         assert_eq!(a, expected);
@@ -177,7 +177,7 @@ mod tests {
         let actual: Matrix<3, 3> = a * b;
 
         // compilation error
-        // let c: Matrix2D<1, 2> = Matrix2D::new([[3.0, 7.0]]);
+        // let c: Matrix<1, 2> = Matrix::new([[3.0, 7.0]]);
         // a * c;
 
         assert_eq!(actual, expected);
