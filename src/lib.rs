@@ -1,6 +1,7 @@
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Mul;
+use std::ops::MulAssign;
 use std::ops::Sub;
 use std::ops::SubAssign;
 
@@ -93,6 +94,30 @@ impl<const M: usize, const N: usize> Mul<f32> for Matrix<M, N> {
     }
 }
 
+impl<const M: usize, const N: usize> MulAssign<Matrix<N, N>> for Matrix<M, N> {
+    fn mul_assign(&mut self, rhs: Matrix<N, N>) {
+        let mut elements = [[0.0; N]; M];
+        for row in 0..M {
+            for column in 0..N {
+                for i in 0..N {
+                    elements[row][column] += self.elements[row][i] * rhs.elements[i][column];
+                }
+            }
+        }
+        self.elements = elements;
+    }
+}
+
+impl<const M: usize, const N: usize> MulAssign<f32> for Matrix<M, N> {
+    fn mul_assign(&mut self, scalar: f32) {
+        for m in 0..M {
+            for n in 0..N {
+                self.elements[m][n] *= scalar;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Matrix;
@@ -181,5 +206,30 @@ mod tests {
         // a * c;
 
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn multiply_assign_scalar_test() {
+        let expected: Matrix<1, 3> = Matrix::new([[3.0, 6.0, 9.0]]);
+
+        let mut a: Matrix<1, 3> = Matrix::new([[1.0, 2.0, 3.0]]);
+        a *= 3.0;
+
+        assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn multiply_assign_other_test() {
+        let expected: Matrix<3, 2> = Matrix::new([[5.0, 11.0], [5.0, 13.0], [7.0, 17.0]]);
+
+        let mut a: Matrix<3, 2> = Matrix::new([[1.0, 2.0], [3.0, 1.0], [3.0, 2.0]]);
+        let b: Matrix<2, 2> = Matrix::new([[1.0, 3.0], [2.0, 4.0]]);
+        a *= b;
+
+        // compilation error
+        // let c: Matrix<2, 3> = Matrix::new([[1.0, 3.0, 5.0], [2.0, 4.0, 1.0]]);
+        // a *= c;
+
+        assert_eq!(a, expected);
     }
 }
