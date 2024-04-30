@@ -97,14 +97,13 @@ impl<const M: usize, const N: usize> Mul<f32> for Matrix<M, N> {
 impl<const M: usize, const N: usize> MulAssign<Matrix<N, N>> for Matrix<M, N> {
     fn mul_assign(&mut self, rhs: Matrix<N, N>) {
         for row in 0..M {
-            let mut results = [0.0; N];
+            let original_row = self.elements[row].clone();
             for column in 0..N {
+                let mut result = 0.0;
                 for i in 0..N {
-                    results[column] += self.elements[row][i] * rhs.elements[i][column];
+                    result += original_row[i] * rhs.elements[i][column];
                 }
-            }
-            for column in 0..N {
-                self.elements[row][column] = results[column];
+                self.elements[row][column] = result;
             }
         }
     }
