@@ -14,6 +14,16 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
     pub fn new(elements: [[f32; N]; M]) -> Self {
         Matrix { elements }
     }
+
+    pub fn transpose(&self) -> Matrix<N, M> {
+        let mut elements = [[0.0; M]; N];
+        for m in 0..M {
+            for n in 0..N {
+                elements[n][m] = self.elements[m][n];
+            }
+        }
+        Matrix { elements }
+    }
 }
 
 impl<const M: usize, const N: usize> Add for Matrix<M, N> {
@@ -232,5 +242,15 @@ mod tests {
         // a *= c;
 
         assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn transpose_test() {
+        let expected: Matrix<3, 2> = Matrix::new([[1.0, 4.0], [2.0, 5.0], [3.0, 6.0]]);
+
+        let a: Matrix<2, 3> = Matrix::new([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
+        let actual: Matrix<3, 2> = a.transpose();
+
+        assert_eq!(actual, expected);
     }
 }
