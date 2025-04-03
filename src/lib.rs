@@ -1,3 +1,6 @@
+#![feature(generic_const_exprs)]
+#![allow(incomplete_features)]
+
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Mul;
@@ -30,12 +33,12 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
     }
 }
 
-impl Matrix<2, 2> {
-    pub fn determinant(&self) -> f32 {
-        self.elements[0][0] * self.elements[1][1] - self.elements[0][1] * self.elements[1][0]
-    }
-
-    pub fn minor(&self, exclude_row_index: usize, exclude_column_index: usize) -> Matrix<1, 1> {
+impl<const M: usize> Matrix<M, M> {
+    pub fn submatrix(
+        &self,
+        exclude_row_index: usize,
+        exclude_column_index: usize,
+    ) -> Matrix<{ M - 1 }, { M - 1 }> {
         let (row_num, column_num) = self.row_column_num();
 
         let remained_elements = self
@@ -50,44 +53,7 @@ impl Matrix<2, 2> {
             .collect::<Vec<_>>();
         let chunked_elements = remained_elements.chunks(column_num - 1).collect::<Vec<_>>();
 
-        let mut elements = [[0.0; 1]; 1];
-        for row_index in 0..row_num - 1 {
-            for column_index in 0..column_num - 1 {
-                elements[row_index][column_index] = *chunked_elements[row_index][column_index];
-            }
-        }
-
-        Matrix { elements }
-    }
-}
-
-impl Matrix<3, 3> {
-    pub fn determinant(&self) -> f32 {
-        let [e11, e12, e13] = self.elements[0];
-        let [e21, e22, e23] = self.elements[1];
-        let [e31, e32, e33] = self.elements[2];
-
-        e11 * (e22 * e33 - e23 * e32)
-            + e12 * (e23 * e31 - e21 * e33)
-            + e13 * (e21 * e32 - e22 * e31)
-    }
-
-    pub fn minor(&self, exclude_row_index: usize, exclude_column_index: usize) -> Matrix<2, 2> {
-        let (row_num, column_num) = self.row_column_num();
-
-        let remained_elements = self
-            .elements
-            .iter()
-            .flatten()
-            .enumerate()
-            .filter(|(i, _e)| {
-                i / column_num != exclude_row_index && i % column_num != exclude_column_index
-            })
-            .map(|(_i, e)| e)
-            .collect::<Vec<_>>();
-        let chunked_elements = remained_elements.chunks(column_num - 1).collect::<Vec<_>>();
-
-        let mut elements = [[0.0; 2]; 2];
+        let mut elements = [[0.0; M - 1]; M - 1];
         for row_index in 0..row_num - 1 {
             for column_index in 0..column_num - 1 {
                 elements[row_index][column_index] = *chunked_elements[row_index][column_index];
@@ -97,15 +63,58 @@ impl Matrix<3, 3> {
         Matrix { elements }
     }
 
-    pub fn cofactor(&self, row_index: usize, column_index: usize) -> f32 {
+    /// determinant of submatrix
+    pub fn minor(&self, exclude_row_index: usize, exclude_column_index: usize) -> f32
+    where
+        [(); M - 1]:,
+    {
+        let submatrix = self.submatrix(exclude_row_index, exclude_column_index);
+        submatrix.determinant()
+    }
+
+    pub fn cofactor(&self, row_index: usize, column_index: usize) -> f32
+    where
+        [(); M - 1]:,
+    {
         let is_plus_sign = (row_index + column_index) % 2 == 0;
         let sign = if is_plus_sign { 1.0 } else { -1.0 };
 
         let minor = self.minor(row_index, column_index);
-        let determinant_of_minor = minor.determinant();
 
-        let result = sign * determinant_of_minor;
+        let result = sign * minor;
         result
+    }
+
+    // FIXME
+    pub fn determinant(&self) -> f32 {
+        match M {
+            2 => self.determinant_2x2(),
+            3 => self.determinant_3x3(),
+            _ => unimplemented!(),
+        }
+    }
+
+    fn determinant_2x2(&self) -> f32 {
+        self.elements[0][0] * self.elements[1][1] - self.elements[0][1] * self.elements[1][0]
+    }
+
+    // FIXME
+    fn determinant_3x3(&self) -> f32 {
+        let e11 = self.elements[0][0];
+        let e12 = self.elements[0][1];
+        let e13 = self.elements[0][2];
+
+        let e21 = self.elements[1][0];
+        let e22 = self.elements[1][1];
+        let e23 = self.elements[1][2];
+
+        let e31 = self.elements[2][0];
+        let e32 = self.elements[2][1];
+        let e33 = self.elements[2][2];
+
+        e11 * (e22 * e33 - e23 * e32)
+            + e12 * (e23 * e31 - e21 * e33)
+            + e13 * (e21 * e32 - e22 * e31)
     }
 }
 
@@ -358,21 +367,21 @@ mod tests {
     }
 
     #[test]
-    fn minor_2x2_test() {
+    fn submatrix_2x2_test() {
         let expected = Matrix::new([[-1.0]]);
 
         let a = Matrix::new([[2.0, 1.0], [-1.0, 2.0]]);
-        let actual = a.minor(0, 1);
+        let actual = a.submatrix(0, 1);
 
         assert_eq!(actual, expected);
     }
 
     #[test]
-    fn minor_3x3_test() {
+    fn submatrix_3x3_test() {
         let expected = Matrix::new([[0.0, -2.0], [1.0, -1.0]]);
 
         let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
-        let actual = a.minor(0, 1);
+        let actual = a.submatrix(0, 1);
 
         assert_eq!(actual, expected);
     }
