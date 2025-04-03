@@ -26,6 +26,24 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
     }
 }
 
+impl Matrix<2, 2> {
+    pub fn determinant(&self) -> f32 {
+        self.elements[0][0] * self.elements[1][1] - self.elements[0][1] * self.elements[1][0]
+    }
+}
+
+impl Matrix<3, 3> {
+    pub fn determinant(&self) -> f32 {
+        let [e11, e12, e13] = self.elements[0];
+        let [e21, e22, e23] = self.elements[1];
+        let [e31, e32, e33] = self.elements[2];
+
+        e11 * (e22 * e33 - e23 * e32)
+            + e12 * (e23 * e31 - e21 * e33)
+            + e13 * (e21 * e32 - e22 * e31)
+    }
+}
+
 impl<const M: usize, const N: usize> Add for Matrix<M, N> {
     type Output = Matrix<M, N>;
 
@@ -250,6 +268,26 @@ mod tests {
 
         let a: Matrix<2, 3> = Matrix::new([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
         let actual: Matrix<3, 2> = a.transpose();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn determinant_2x2_test() {
+        let expected = 5.0;
+
+        let a = Matrix::new([[2.0, 1.0], [-1.0, 2.0]]);
+        let actual = a.determinant();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn determinant_3x3_test() {
+        let expected = 22.0;
+
+        let a = Matrix::new([[3.0, -2.0, 0.0], [1.0, 4.0, -3.0], [-1.0, 0.0, 2.0]]);
+        let actual = a.determinant();
 
         assert_eq!(actual, expected);
     }
