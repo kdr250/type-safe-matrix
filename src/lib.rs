@@ -96,6 +96,17 @@ impl Matrix<3, 3> {
 
         Matrix { elements }
     }
+
+    pub fn cofactor(&self, row_index: usize, column_index: usize) -> f32 {
+        let is_plus_sign = (row_index + column_index) % 2 == 0;
+        let sign = if is_plus_sign { 1.0 } else { -1.0 };
+
+        let minor = self.minor(row_index, column_index);
+        let determinant_of_minor = minor.determinant();
+
+        let result = sign * determinant_of_minor;
+        result
+    }
 }
 
 impl<const M: usize, const N: usize> Add for Matrix<M, N> {
@@ -364,5 +375,21 @@ mod tests {
         let actual = a.minor(0, 1);
 
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn cofactor_3x3_test() {
+        let expected1 = 6.0;
+        let expected2 = 13.0;
+        let expected3 = -8.0;
+
+        let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
+        let actual1 = a.cofactor(0, 0);
+        let actual2 = a.cofactor(1, 2);
+        let actual3 = a.cofactor(2, 2);
+
+        assert_eq!(actual1, expected1);
+        assert_eq!(actual2, expected2);
+        assert_eq!(actual3, expected3);
     }
 }
