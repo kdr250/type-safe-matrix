@@ -24,11 +24,40 @@ impl<const M: usize, const N: usize> Matrix<M, N> {
         }
         Matrix { elements }
     }
+
+    pub fn row_column_num(&self) -> (usize, usize) {
+        (M, N)
+    }
 }
 
 impl Matrix<2, 2> {
     pub fn determinant(&self) -> f32 {
         self.elements[0][0] * self.elements[1][1] - self.elements[0][1] * self.elements[1][0]
+    }
+
+    pub fn minor(&self, exclude_row_index: usize, exclude_column_index: usize) -> Matrix<1, 1> {
+        let (row_num, column_num) = self.row_column_num();
+
+        let remained_elements = self
+            .elements
+            .iter()
+            .flatten()
+            .enumerate()
+            .filter(|(i, _e)| {
+                i / column_num != exclude_row_index && i % column_num != exclude_column_index
+            })
+            .map(|(_i, e)| e)
+            .collect::<Vec<_>>();
+        let chunked_elements = remained_elements.chunks(column_num - 1).collect::<Vec<_>>();
+
+        let mut elements = [[0.0; 1]; 1];
+        for row_index in 0..row_num - 1 {
+            for column_index in 0..column_num - 1 {
+                elements[row_index][column_index] = *chunked_elements[row_index][column_index];
+            }
+        }
+
+        Matrix { elements }
     }
 }
 
@@ -41,6 +70,31 @@ impl Matrix<3, 3> {
         e11 * (e22 * e33 - e23 * e32)
             + e12 * (e23 * e31 - e21 * e33)
             + e13 * (e21 * e32 - e22 * e31)
+    }
+
+    pub fn minor(&self, exclude_row_index: usize, exclude_column_index: usize) -> Matrix<2, 2> {
+        let (row_num, column_num) = self.row_column_num();
+
+        let remained_elements = self
+            .elements
+            .iter()
+            .flatten()
+            .enumerate()
+            .filter(|(i, _e)| {
+                i / column_num != exclude_row_index && i % column_num != exclude_column_index
+            })
+            .map(|(_i, e)| e)
+            .collect::<Vec<_>>();
+        let chunked_elements = remained_elements.chunks(column_num - 1).collect::<Vec<_>>();
+
+        let mut elements = [[0.0; 2]; 2];
+        for row_index in 0..row_num - 1 {
+            for column_index in 0..column_num - 1 {
+                elements[row_index][column_index] = *chunked_elements[row_index][column_index];
+            }
+        }
+
+        Matrix { elements }
     }
 }
 
@@ -288,6 +342,26 @@ mod tests {
 
         let a = Matrix::new([[3.0, -2.0, 0.0], [1.0, 4.0, -3.0], [-1.0, 0.0, 2.0]]);
         let actual = a.determinant();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn minor_2x2_test() {
+        let expected = Matrix::new([[-1.0]]);
+
+        let a = Matrix::new([[2.0, 1.0], [-1.0, 2.0]]);
+        let actual = a.minor(0, 1);
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn minor_3x3_test() {
+        let expected = Matrix::new([[0.0, -2.0], [1.0, -1.0]]);
+
+        let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
+        let actual = a.minor(0, 1);
 
         assert_eq!(actual, expected);
     }
