@@ -116,6 +116,23 @@ impl<const M: usize> Matrix<M, M> {
             + e12 * (e23 * e31 - e21 * e33)
             + e13 * (e21 * e32 - e22 * e31)
     }
+
+    pub fn adjoint(&self) -> Matrix<M, M>
+    where
+        [(); M - 1]:,
+    {
+        let mut elements = [[0.0; M]; M];
+
+        for row in 0..M {
+            for column in 0..M {
+                let cofactor = self.cofactor(row, column);
+                elements[row][column] = cofactor;
+            }
+        }
+
+        let matrix = Matrix { elements };
+        matrix.transpose()
+    }
 }
 
 impl<const M: usize, const N: usize> Add for Matrix<M, N> {
@@ -400,5 +417,15 @@ mod tests {
         assert_eq!(actual1, expected1);
         assert_eq!(actual2, expected2);
         assert_eq!(actual3, expected3);
+    }
+
+    #[test]
+    fn adjoint_test() {
+        let expected = Matrix::new([[6.0, 9.0, 0.0], [-2.0, 1.0, -8.0], [-2.0, 13.0, -8.0]]);
+
+        let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
+        let actual = a.adjoint();
+
+        assert_eq!(actual, expected);
     }
 }
