@@ -133,6 +133,15 @@ impl<const M: usize> Matrix<M, M> {
         let matrix = Matrix { elements };
         matrix.transpose()
     }
+
+    pub fn invert(&self) -> Matrix<M, M>
+    where
+        [(); M - 1]:,
+    {
+        let adjoint = self.adjoint();
+        let determinant = self.determinant();
+        adjoint * (1.0 / determinant)
+    }
 }
 
 impl<const M: usize, const N: usize> Add for Matrix<M, N> {
@@ -241,6 +250,26 @@ impl<const M: usize, const N: usize> MulAssign<f32> for Matrix<M, N> {
 #[cfg(test)]
 mod tests {
     use crate::Matrix;
+
+    fn near_zero(value: f32, epsilon: f32) -> bool {
+        value.abs() <= epsilon
+    }
+
+    #[macro_export]
+    macro_rules! assert_near_eq {
+        ($left:expr, $right:expr, $epsilon:expr $(,)?) => {
+            match (&$left, &$right, &$epsilon) {
+                (left_val, right_val, epsilon_val) => {
+                    assert!(
+                        near_zero(*left_val - *right_val, *epsilon_val),
+                        "`left == right` failed... left = {}, right = {}",
+                        *left_val,
+                        *right_val
+                    );
+                }
+            }
+        };
+    }
 
     #[test]
     fn add_test() {
@@ -427,5 +456,38 @@ mod tests {
         let actual = a.adjoint();
 
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn invert_test() {
+        let expected = Matrix::new([
+            [-1.0 / 4.0, -3.0 / 8.0, 0.0],
+            [1.0 / 12.0, -1.0 / 24.0, 1.0 / 3.0],
+            [1.0 / 12.0, -13.0 / 24.0, 1.0 / 3.0],
+        ]);
+
+        let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
+        let actual = a.invert();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn learning_invert_test() {
+        // Identity matrix
+        let expected = Matrix::new([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]);
+
+        // Multiplying original matrix and invert Matrix makes identity matrix
+        let a = Matrix::new([[-4.0, -3.0, 3.0], [0.0, 2.0, -2.0], [1.0, 4.0, -1.0]]);
+        let invert = a.invert();
+        let actual = a * invert;
+
+        for row in 0..3 {
+            for column in 0..3 {
+                let expected = expected.elements[row][column];
+                let actual = actual.elements[row][column];
+                assert_near_eq!(actual, expected, 0.000001);
+            }
+        }
     }
 }
