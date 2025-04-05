@@ -90,6 +90,7 @@ impl<const M: usize> Matrix<M, M> {
         match M {
             2 => self.determinant_2x2(),
             3 => self.determinant_3x3(),
+            4 => self.determinant_4x4(),
             _ => unimplemented!(),
         }
     }
@@ -115,6 +116,45 @@ impl<const M: usize> Matrix<M, M> {
         e11 * (e22 * e33 - e23 * e32)
             + e12 * (e23 * e31 - e21 * e33)
             + e13 * (e21 * e32 - e22 * e31)
+    }
+
+    // FIXME
+    fn determinant_4x4(&self) -> f32 {
+        let e11 = self.elements[0][0];
+        let e12 = self.elements[0][1];
+        let e13 = self.elements[0][2];
+        let e14 = self.elements[0][3];
+
+        let e21 = self.elements[1][0];
+        let e22 = self.elements[1][1];
+        let e23 = self.elements[1][2];
+        let e24 = self.elements[1][3];
+
+        let e31 = self.elements[2][0];
+        let e32 = self.elements[2][1];
+        let e33 = self.elements[2][2];
+        let e34 = self.elements[2][3];
+
+        let e41 = self.elements[3][0];
+        let e42 = self.elements[3][1];
+        let e43 = self.elements[3][2];
+        let e44 = self.elements[3][3];
+
+        e11 * (e22 * (e33 * e44 - e34 * e43)
+            + e23 * (e34 * e42 - e32 * e44)
+            + e24 * (e32 * e43 - e33 * e42))
+            - e12
+                * (e21 * (e33 * e44 - e34 * e43)
+                    + e23 * (e34 * e41 - e31 * e44)
+                    + e24 * (e31 * e43 - e33 * e41))
+            + e13
+                * (e21 * (e32 * e44 - e34 * e42)
+                    + e22 * (e34 * e41 - e31 * e44)
+                    + e24 * (e31 * e42 - e32 * e41))
+            - e14
+                * (e21 * (e32 * e43 - e33 * e42)
+                    + e22 * (e33 * e41 - e31 * e43)
+                    + e23 * (e31 * e42 - e32 * e41))
     }
 
     pub fn adjoint(&self) -> Matrix<M, M>
@@ -407,6 +447,21 @@ mod tests {
         let expected = 22.0;
 
         let a = Matrix::new([[3.0, -2.0, 0.0], [1.0, 4.0, -3.0], [-1.0, 0.0, 2.0]]);
+        let actual = a.determinant();
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn determinant_4x4_test() {
+        let expected = -16.0;
+
+        let a = Matrix::new([
+            [1.0, 1.0, 1.0, -1.0],
+            [1.0, 1.0, -1.0, 1.0],
+            [1.0, -1.0, 1.0, 1.0],
+            [-1.0, 1.0, 1.0, 1.0],
+        ]);
         let actual = a.determinant();
 
         assert_eq!(actual, expected);
